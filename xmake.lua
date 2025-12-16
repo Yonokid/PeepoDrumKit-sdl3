@@ -69,15 +69,24 @@ target("PeepoDrumKit")
     set_kind("binary")
     set_symbols("debug") -- Keep debug symbols in all build modes
     set_languages("cxxlatest")
+
+    -- project sources
     add_files("src/main.cpp")
     add_files("src/core/*.cpp")
     add_files("src/peepodrumkit/*.cpp")
-    add_files("src/audio/*.cpp")
-    add_files("src/audio/*.c")
+    add_files("src/audio/*.c", "src/audio/*.cpp")
     add_files("src/imgui/*.cpp")
     add_files("src/imgui/ImGuiColorTextEdit/*.cpp")
     add_files("src/imgui/extension/*.cpp")
-    
+
+    -- project headers
+    add_headerfiles("src/core/*.h")
+    add_headerfiles("src/peepodrumkit/*.h")
+    add_headerfiles("src/audio/*.h")
+    add_headerfiles("src/imgui/*.h")
+    add_headerfiles("src/imgui/ImGuiColorTextEdit/*.h")
+    add_headerfiles("src/imgui/extension/*.h")
+
     add_defines("IMGUI_USER_CONFIG=\"imgui/peepodrumkit_imconfig.h\"")
 
     if not is_mode("debug") then
