@@ -122,6 +122,7 @@ target("PeepoDrumKit")
         add_syslinks("Shlwapi", "Shell32", "Ole32", "dxgi", "d3d11", "ntdll")
         -- add_packages("directxshadercompiler")
         -- add_rules("utils.hlsl2spv", {bin2c = true})
+        add_cxxflags("/utf-8") -- force UTF-8 string without u8"" (not default in MSVC++)
     elseif is_os("macosx") then
         add_rules("xcode.application")
         add_files("src/Info.plist")
