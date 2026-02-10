@@ -37,8 +37,14 @@ namespace PeepoDrumKit
 
 	static void OpenChartDirectoryInFileExplorer(const ChartContext& context)
 	{
-		const std::string_view chartDirectory = Path::GetDirectoryName(context.ChartFilePath);
-		if (!chartDirectory.empty() && Directory::Exists(chartDirectory))
+		if (context.ChartFilePath.empty())
+			return;
+
+		std::string_view chartDirectory = Path::GetDirectoryName(context.ChartFilePath);
+		if (chartDirectory.empty())
+			chartDirectory = ".";
+
+		if (Directory::Exists(chartDirectory))
 			Shell::OpenInExplorer(chartDirectory);
 	}
 

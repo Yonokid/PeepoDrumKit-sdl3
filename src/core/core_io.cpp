@@ -64,8 +64,12 @@ namespace Path
 
 	std::string_view GetDirectoryName(std::string_view filePath)
 	{
-		const std::string_view fileName = GetFileName(filePath);
-		return fileName.empty() ? filePath : filePath.substr(0, filePath.size() - fileName.size() - 1);
+		const size_t lastDirectoryIndex = filePath.find_last_of(DirectorySeparators);
+		if (lastDirectoryIndex == std::string_view::npos)
+			return "";
+		if (lastDirectoryIndex == 0)
+			return filePath.substr(0, 1);
+		return filePath.substr(0, lastDirectoryIndex);
 	}
 
 	b8 IsRelative(std::string_view filePath)
@@ -288,17 +292,22 @@ namespace Shell
 		if (filePath.empty())
 			return;
 
+		std::string pathString{ filePath };
+
 		if (Path::IsRelative(filePath))
 		{
-			std::string absolutePath = "file://" + Directory::GetWorkingDirectory();
-			absolutePath += "/";
-			absolutePath += filePath;
-			SDL_OpenURL(absolutePath.c_str());
+			std::error_code ec;
+			std::filesystem::path absolutePath = std::filesystem::absolute(pathString, ec);
+			if (!ec)
+				pathString = absolutePath.string();
 		}
-		else
-		{
-			SDL_OpenURL(filePath.data());
-		}
+
+#if defined(_WIN32)
+		SDL_OpenURL(pathString.c_str());
+#else
+		std::string url = "file://" + pathString;
+		SDL_OpenURL(url.c_str());
+#endif
 	}
 
 	MessageBoxResult ShowMessageBox(std::string_view message, std::string_view title, MessageBoxButtons buttons, MessageBoxIcon icon, void *parentWindowHandle)

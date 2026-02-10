@@ -125,15 +125,79 @@ namespace CustomDraw
 	ImTextureID GPUTexture::GetTexID() const { return (ImTextureID)(intptr_t)&this->Binding; }
 	void DrawWaveformChunk(ImDrawList *drawList, Rect rect, u32 color, const WaveformChunk &chunk)
 	{
-		// TODO: Optimize with a single triangle strip or a custom GPU shader
-		f32 lineThinkness = rect.GetWidth() / static_cast<f32>(WaveformPixelsPerChunk);
-		for (i32 i = 0; i < WaveformPixelsPerChunk; i++)
+		// Render waveform using a triangle strip (connected quads)
+		const int sampleCount = WaveformPixelsPerChunk;
+		if (sampleCount < 2) return;
+
+		// 4 vertices per sample: TopTransparent, TopSolid, BottomSolid, BottomTransparent
+		const int vertexCount = sampleCount * 4;
+		// 3 quads per sample-step (TopFringe, MainBody, BottomFringe) * 6 indices per quad
+		const int indexCount = (sampleCount - 1) * 18;
+
+		// Check if we would overflow the 16-bit index buffer when VtxOffset is not supported or handled automatically.
+		// PrimReserve should handle splitting, but just in case, we safeguard.
+		// (Although splitting a continuous strip is hard, ImGui doesn't split strip automatically unless we separate commands).
+		// We trust PrimReserve, but we perform strict pointer logic.
+
+		drawList->PrimReserve(indexCount, vertexCount);
+
+		ImDrawVert* vtx_write = drawList->_VtxWritePtr;
+		ImDrawIdx* idx_write = drawList->_IdxWritePtr;
+		unsigned int vtx_current_idx = drawList->_VtxCurrentIdx;
+		ImVec2 uv_white = drawList->_Data->TexUvWhitePixel;
+
+		f32 xStart = rect.TL.x;
+		f32 xStep = rect.GetWidth() / static_cast<f32>(sampleCount - 1);
+		
+		f32 yCenter = rect.GetCenter().y;
+		f32 halfHeight = rect.GetHeight() * 0.5f;
+		
+		f32 aa_size = 1.0f; 
+		u32 color_trans = color & ~IM_COL32_A_MASK;
+
+		for (int i = 0; i < sampleCount; i++)
 		{
 			f32 amplitude = chunk.PerPixelAmplitude[i];
-			f32 x = rect.TL.x + (i * lineThinkness);
-			f32 yCenter = rect.GetCenter().y;
-			f32 yOffset = (amplitude * 0.5f) * rect.GetHeight();
-			drawList->AddLine(ImVec2(x, yCenter - yOffset), ImVec2(x, yCenter + yOffset), color, lineThinkness);
+			f32 x = xStart + (i * xStep);
+			f32 yOffset = amplitude * halfHeight; 
+
+			f32 yTop = yCenter - yOffset;
+			f32 yBot = yCenter + yOffset;
+
+			// V0: Top Outer
+			vtx_write[0].pos.x = x; vtx_write[0].pos.y = yTop - aa_size; vtx_write[0].uv = uv_white; vtx_write[0].col = color_trans;
+			// V1: Top Inner
+			vtx_write[1].pos.x = x; vtx_write[1].pos.y = yTop;           vtx_write[1].uv = uv_white; vtx_write[1].col = color;
+			// V2: Bottom Inner
+			vtx_write[2].pos.x = x; vtx_write[2].pos.y = yBot;           vtx_write[2].uv = uv_white; vtx_write[2].col = color;
+			// V3: Bottom Outer
+			vtx_write[3].pos.x = x; vtx_write[3].pos.y = yBot + aa_size; vtx_write[3].uv = uv_white; vtx_write[3].col = color_trans;
+
+			vtx_write += 4;
 		}
+
+		for (int i = 0; i < sampleCount - 1; i++)
+		{
+			unsigned int idx = vtx_current_idx + (i * 4);
+			unsigned int next_idx = idx + 4; // Indices are relative to the vertex buffer unless VtxOffset is used.
+			
+			// Top Fringe
+			idx_write[0] = (ImDrawIdx)(idx + 0); idx_write[1] = (ImDrawIdx)(next_idx + 0); idx_write[2] = (ImDrawIdx)(next_idx + 1);
+			idx_write[3] = (ImDrawIdx)(next_idx + 1); idx_write[4] = (ImDrawIdx)(idx + 1); idx_write[5] = (ImDrawIdx)(idx + 0);
+
+			// Main Body
+			idx_write[6] = (ImDrawIdx)(idx + 1); idx_write[7] = (ImDrawIdx)(next_idx + 1); idx_write[8] = (ImDrawIdx)(next_idx + 2);
+			idx_write[9] = (ImDrawIdx)(next_idx + 2); idx_write[10] = (ImDrawIdx)(idx + 2); idx_write[11] = (ImDrawIdx)(idx + 1);
+
+			// Bottom Fringe
+			idx_write[12] = (ImDrawIdx)(idx + 2); idx_write[13] = (ImDrawIdx)(next_idx + 2); idx_write[14] = (ImDrawIdx)(next_idx + 3);
+			idx_write[15] = (ImDrawIdx)(next_idx + 3); idx_write[16] = (ImDrawIdx)(idx + 3); idx_write[17] = (ImDrawIdx)(idx + 2);
+
+			idx_write += 18;
+		}
+
+		drawList->_VtxWritePtr = vtx_write;
+		drawList->_IdxWritePtr = idx_write;
+		drawList->_VtxCurrentIdx += vertexCount;
 	}
 }
