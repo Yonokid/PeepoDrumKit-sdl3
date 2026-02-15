@@ -322,6 +322,10 @@ namespace ApplicationHost
 		// Submit the command buffer
 		SDL_SubmitGPUCommandBuffer(command_buffer);
 
+		if (GlobalState.RequestExitNextFrame) {
+			return SDL_APP_SUCCESS;
+		}
+
 		return SDL_APP_CONTINUE;
 	}
 
