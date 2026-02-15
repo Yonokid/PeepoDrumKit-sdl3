@@ -195,8 +195,14 @@ namespace PeepoDrumKit
 		SprInfo GetInfo(SprID spr) const;
 		b8 GetImageQuad(ImImageQuad& out, SprID spr, SprTransform transform, u32 colorTint, const SprUV* uv);
 
-		inline void DrawSprite(ImDrawList* drawList, const ImImageQuad& quad) { drawList->AddImageQuad(quad.TexID, quad.Pos[0], quad.Pos[1], quad.Pos[2], quad.Pos[3], quad.UV[0], quad.UV[1], quad.UV[2], quad.UV[3], quad.Color); }
-		inline void DrawSprite(ImDrawList* drawList, SprID spr, SprTransform transform, u32 colorTint = 0xFFFFFFFF, const SprUV* uv = nullptr) { if (ImImageQuad quad; GetImageQuad(quad, spr, transform, colorTint, uv)) { DrawSprite(drawList, quad); } }
+		inline void DrawSprite(ImDrawList* drawList, const ImImageQuad& quad) {
+			drawList->AddImageQuad(quad.TexID, quad.Pos[0], quad.Pos[1], quad.Pos[2], quad.Pos[3], quad.UV[0], quad.UV[1], quad.UV[2], quad.UV[3], quad.Color);
+		}
+		inline void DrawSprite(ImDrawList* drawList, SprID spr, SprTransform transform, u32 colorTint = 0xFFFFFFFF, const SprUV* uv = nullptr) {
+			if (ImImageQuad quad; GetImageQuad(quad, spr, transform, colorTint, uv)) {
+				DrawSprite(drawList, quad);
+			}
+		}
 
 		struct OpaqueData;
 		std::unique_ptr<OpaqueData> Data;

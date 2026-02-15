@@ -6,7 +6,7 @@
 namespace PeepoDrumKit
 {
 	inline f32 TimelineRowHeight = 32.0f;
-	inline f32 TimelineRowHeightNotes = 48.0f;
+	inline f32 TimelineRowHeightNotes = 64.0f;
 	inline f32 TimelineAutoScrollLockContentWidthFactor = 0.35f;
 	inline f32 TimelineCursorHeadHeight = 10.0f;
 	inline f32 TimelineCursorHeadWidth = 11.0f;

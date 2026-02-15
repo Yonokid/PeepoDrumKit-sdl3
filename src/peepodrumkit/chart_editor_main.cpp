@@ -115,8 +115,15 @@ namespace PeepoDrumKit
 	{
 		// TODO: Parse arguments and write into global argv settings struct
 		// auto[argc, argv] = CommandLine::GetCommandLineUTF8();
-		
-		Directory::SetWorkingDirectory(Directory::GetExecutableDirectory());
+
+		// NOTE: On macOS, resources are located in the Resources folder of the bundle
+		// We set the working directory to that folder so that relative paths work as expected
+		const std::string resourceDir = Directory::GetResourceDirectory();
+		if (Path::IsDirectory(resourceDir))
+			Directory::SetWorkingDirectory(resourceDir);
+		else
+			Directory::SetWorkingDirectory(Directory::GetExecutableDirectory());
+
 		std::cout << "Working Directory: " << Directory::GetWorkingDirectory() << std::endl;
 		std::cout << "Resource Directory: " << Directory::GetResourceDirectory() << std::endl;
 

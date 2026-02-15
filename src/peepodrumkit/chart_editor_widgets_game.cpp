@@ -602,7 +602,7 @@ namespace PeepoDrumKit
 #endif
 
 		if (!context.Gfx.IsAsyncLoading())
-			context.Gfx.Rasterize(SprGroup::Game, Camera.WorldToScreenScaleFactor);
+			context.Gfx.Rasterize(SprGroup::Game, Camera.WorldToScreenScaleFactor * ImGui::GetIO().DisplayFramebufferScale.x);
 
 		ImDrawList* drawList = Gui::GetWindowDrawList();
 		drawList->ChannelsSplit(4); // 0: lane, 1: judgement mark, 2: bar lines, 3: notes

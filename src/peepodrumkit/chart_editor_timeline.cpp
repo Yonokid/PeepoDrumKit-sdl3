@@ -3188,7 +3188,7 @@ namespace PeepoDrumKit
 	void ChartTimeline::DrawAllAtEndOfFrame(ChartContext& context)
 	{
 		if (!context.Gfx.IsAsyncLoading())
-			context.Gfx.Rasterize(SprGroup::Timeline, GuiScaleFactorTarget);
+			context.Gfx.Rasterize(SprGroup::Timeline, GuiScaleFactorTarget * ImGui::GetIO().DisplayFramebufferScale.x);
 
 		const b8 isPlayback = context.GetIsPlayback();
 		const BeatAndTime cursorBeatAndTime = context.GetCursorBeatAndTime();
