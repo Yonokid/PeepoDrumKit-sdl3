@@ -530,7 +530,7 @@ namespace PeepoDrumKit
 			sprintf_s(performanceTextBuffer, "[ %.3f ms (%.1f FPS) ]", (1000.0f / Gui::GetIO().Framerate), Gui::GetIO().Framerate);
 
 			char audioTextBuffer[128];
-			#define AudioDeviceMenuLabel "##audioTextMenu"
+			#define AudioDeviceMenuLabel "###audioTextMenu"
 			if (Audio::Engine.GetIsStreamOpenRunning())
 			{
 				auto bufferLatency = Audio::FramesToTime(Audio::Engine.GetBufferFrameSize(), Audio::Engine.OutputSampleRate).ToMS();
