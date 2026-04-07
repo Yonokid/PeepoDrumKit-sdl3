@@ -1,3 +1,5 @@
+#ifdef __APPLE__
+
 #include "audio_common.h"
 
 // Conflict between MacTypes.h and core_types.h
@@ -205,3 +207,5 @@ namespace Audio
 	u32 CoreAudioBackend::GetVariantCount() const { return 1; }
 	cstr CoreAudioBackend::GetVariantName(u32 index) const { return "CoreAudio"; }
 }
+
+#endif
