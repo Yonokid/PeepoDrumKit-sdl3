@@ -14,7 +14,7 @@ namespace Audio
 
 	static std::unique_ptr<IAudioBackend> CreateBackendInterface(Backend backend)
 	{
-		
+
 #ifdef _WIN32
 		return std::make_unique<WASAPIBackend>();
 #elif defined(__APPLE__)
@@ -90,6 +90,7 @@ namespace Audio
 		ChannelMixer ChannelMixer = {};
 
 		Backend CurrentBackendType = {};
+		SoundAPI CurrentSoundAPI = SoundAPI::Auto;
 		std::unique_ptr<IAudioBackend> CurrentBackend = nullptr;
 
 	public:
@@ -520,6 +521,7 @@ namespace Audio
 		streamParam.ChannelCount = OutputChannelCount;
 		streamParam.DesiredFrameCount = impl->TargetBufferFrameSize;
 		streamParam.ShareMode = (impl->CurrentBackendType == Backend::PlatformExclusive) ? StreamShareMode::Exclusive : StreamShareMode::Shared;
+		streamParam.SoundAPI = impl->CurrentSoundAPI;
 
 		if (impl->CurrentBackend == nullptr)
 			impl->CurrentBackend = CreateBackendInterface(impl->CurrentBackendType);
@@ -750,6 +752,24 @@ namespace Audio
 		else
 		{
 			impl->CurrentBackend = CreateBackendInterface(value);
+		}
+	}
+
+	SoundAPI AudioEngine::GetSoundAPI() const
+	{
+		return impl->CurrentSoundAPI;
+	}
+
+	void AudioEngine::SetSoundAPI(SoundAPI value)
+	{
+		if (value == impl->CurrentSoundAPI)
+			return;
+
+		impl->CurrentSoundAPI = value;
+		if (impl->IsStreamOpenRunning)
+		{
+			StopCloseStream();
+			OpenStartStream();
 		}
 	}
 

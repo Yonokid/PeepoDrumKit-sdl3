@@ -1,6 +1,7 @@
 #pragma once
 #include "core_types.h"
 #include "audio_common.h"
+#include "audio_backend.h"
 #include "core_string.h"
 #include <functional>
 #include <future>
@@ -175,6 +176,9 @@ namespace Audio
 	public:
 		Backend GetBackend() const;
 		void SetBackend(Backend value);
+
+		SoundAPI GetSoundAPI() const;
+		void SetSoundAPI(SoundAPI value);
 
 		u32 GetBackendVariantCount() const;
 		cstr GetBackendVariantName(u32 index) const;

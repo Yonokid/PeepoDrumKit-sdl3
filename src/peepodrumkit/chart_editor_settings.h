@@ -161,6 +161,7 @@ namespace PeepoDrumKit
 			WithDefault<b8> CloseDeviceOnIdleFocusLoss = false;
 			WithDefault<b8> RequestExclusiveDeviceAccess = false;
 			WithDefault<i32> BufferFrameSize = 0;
+			WithDefault<std::string> SoundAPI = "auto";
 		} Audio;
 
 		struct AnimationData

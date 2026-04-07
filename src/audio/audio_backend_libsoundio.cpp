@@ -100,12 +100,37 @@ namespace Audio
 
 			auto err = 0;
 
-			if ((err = soundio_connect(soundio)))
+			SoundIoBackend soundioBackend = SoundIoBackendNone;
+			switch (param.SoundAPI)
 			{
-				printf("Error connecting to SoundIO: %s\n", soundio_strerror(err));
-				soundio_destroy(soundio);
-				soundio = nullptr;
-				return false;
+			case SoundAPI::ALSA:       soundioBackend = SoundIoBackendAlsa;       break;
+			case SoundAPI::PulseAudio: soundioBackend = SoundIoBackendPulseAudio; break;
+			case SoundAPI::Jack:       soundioBackend = SoundIoBackendJack;       break;
+			case SoundAPI::Dummy:      soundioBackend = SoundIoBackendDummy;      break;
+			default: break;
+			}
+
+			if (soundioBackend != SoundIoBackendNone)
+			{
+				printf("SoundIO connecting with backend: %s\n", soundio_backend_name(soundioBackend));
+				if ((err = soundio_connect_backend(soundio, soundioBackend)))
+				{
+					printf("Error connecting to SoundIO backend %s: %s\n", soundio_backend_name(soundioBackend), soundio_strerror(err));
+					soundio_destroy(soundio);
+					soundio = nullptr;
+					return false;
+				}
+			}
+			else
+			{
+				printf("SoundIO connecting with auto backend selection\n");
+				if ((err = soundio_connect(soundio)))
+				{
+					printf("Error connecting to SoundIO: %s\n", soundio_strerror(err));
+					soundio_destroy(soundio);
+					soundio = nullptr;
+					return false;
+				}
 			}
 
 			soundio_flush_events(soundio);
@@ -171,12 +196,7 @@ namespace Audio
 			outstream_local->userdata = static_cast<void *>(this);
 			outstream_local->sample_rate = soundio_device_nearest_sample_rate(outputDevice, static_cast<int>(param.SampleRate));
 			auto layout = soundio_channel_layout_get_default(param.ChannelCount);
-			outstream_local->layout.name = layout->name;
-			outstream_local->layout.channel_count = layout->channel_count;
-			for (int i = 0; i < layout->channel_count; ++i)
-			{
-				outstream_local->layout.channels[i] = layout->channels[i];
-			}
+			outstream_local->layout = *layout;
 			outstream_local->write_callback = soundio_impl_write_callback;
 
 			if ((err = soundio_outstream_open(outstream_local)))
@@ -194,7 +214,7 @@ namespace Audio
 
 			if (outstream_local->layout_error)
 			{
-				printf("unable to set channel layout: %s\n", soundio_strerror(outstream->layout_error));
+				printf("unable to set channel layout: %s\n", soundio_strerror(outstream_local->layout_error));
 				soundio_outstream_destroy(outstream_local);
 				soundio_device_unref(outputDevice);
 				soundio_destroy(soundio);

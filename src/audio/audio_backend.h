@@ -12,12 +12,22 @@ namespace Audio
 		Count
 	};
 
+	enum class SoundAPI : u8
+	{
+		Auto,
+		ALSA,
+		PulseAudio,
+		Jack,
+		Dummy,
+	};
+
 	struct BackendStreamParam
 	{
 		u32 SampleRate;
 		u32 ChannelCount;
 		u32 DesiredFrameCount;
 		StreamShareMode ShareMode;
+		SoundAPI SoundAPI = SoundAPI::Auto;
 	};
 
 	using BackendRenderCallback = std::function<void(i16 *outputBuffer, const u32 bufferFrameCount, const u32 bufferChannelCount)>;
