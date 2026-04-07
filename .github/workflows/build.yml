@@ -38,7 +38,7 @@ jobs:
         if: ${{ matrix.os == 'linux' }}
         run: |
           sudo apt-get update
-          sudo apt-get install -y libsoundio-dev
+          sudo apt-get install -y libsoundio-dev libx11-dev
 
       - name: Setup LLVM
         if: ${{ matrix.os != 'windows' }}
